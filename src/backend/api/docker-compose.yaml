@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  apisix:
+    image: apache/apisix:3.7.0-debian
+    restart: always
+    volumes:
+      - ./conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    environment:
+      - APISIX_STAND_ALONE=true
+    ports:
+      - "9080:9080/tcp" # http access
+      - "9443:9443/tcp" # https access
+    networks:
+      - api
+    container_name: api
+  httpbin:
+    image: kennethreitz/httpbin
+    restart: always
+    ports:
+      - "80:80"
+    container_name: httpbin
+    networks:
+      - api
+
+networks:
+  api:

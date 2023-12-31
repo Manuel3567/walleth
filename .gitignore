@@ -58,5 +58,7 @@ extensions.json
 terraform.*
 .terraform.*
 .terraform/*
+**/.terraform
 *.exe
 variables.tfvars
+**/build
