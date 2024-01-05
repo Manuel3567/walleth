@@ -1,0 +1,11 @@
+# configmap.yaml
+{{- if .Values.env }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  {{ include "data.fullname" . }}
+data:
+  {{- range .Values.env }}
+  {{ .name | lower }}: {{ .value | quote }}
+  {{- end }}
+{{- end }}

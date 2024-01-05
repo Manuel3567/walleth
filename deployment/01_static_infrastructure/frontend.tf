@@ -72,7 +72,7 @@ resource "google_dns_record_set" "frontend_dns" {
 }
 
 resource "google_compute_global_forwarding_rule" "frontend_https_forwarding_rule" {
-  name = "frontend-https-forwarding-rule"
+  name       = "frontend-https-forwarding-rule"
   target     = google_compute_target_https_proxy.frontend_https_proxy.id
   port_range = "443"
   ip_address = google_compute_global_address.frontend_load_balancer_ip.address
@@ -99,6 +99,6 @@ resource "google_compute_target_http_proxy" "frontend_http_proxy" {
   url_map = google_compute_url_map.frontend_url_map.id
 }
 
-output "load_balancer_ip" {
-  value = google_compute_global_forwarding_rule.frontend_forwarding_rule.ip_address
+output "frontend_load_balancer_ip" {
+  value = google_compute_global_address.frontend_load_balancer_ip.address
 }

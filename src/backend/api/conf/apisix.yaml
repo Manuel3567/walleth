@@ -4,12 +4,12 @@ routes:
       # sample rewrite of path
       proxy-rewrite:
         regex_uri:
-          - "^/(api)/web1/(.*)"
+          - "^/(api)/portfolio/(.*)"
           - "/$2"
       openid-connect:
         client_id: ""
         client_secret: ""
-        discovery: "https://AUTH0DOMAIN/.well-known/openid-configuration"
+        discovery: "https://$AUTH0DOMAIN/.well-known/openid-configuration"
         # TODO: unfortunately audience is not checked by the plugin
         # TODO: wait for next release where required scopes check is implemented
         required_scopes:

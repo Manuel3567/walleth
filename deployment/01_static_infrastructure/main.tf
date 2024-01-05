@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/google"
       version = "5.10.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.0"
+    }
   }
 }
 
@@ -20,4 +24,8 @@ provider "google" {
 
 terraform {
   backend "gcs" {}
+}
+
+# used to access the project number
+data "google_project" "project" {
 }
