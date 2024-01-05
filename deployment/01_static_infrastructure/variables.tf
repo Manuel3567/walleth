@@ -45,10 +45,6 @@ variable "kubernetes_namespace" {
   type = string
 }
 
-variable "bastion_service_account_name" {
-  type = string
-}
-
 variable "admin_service_account_name" {
   type = string
 }

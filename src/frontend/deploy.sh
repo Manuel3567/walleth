@@ -8,6 +8,8 @@ cd "$SCRIPT_DIR"
 
 source .env
 
+npm install
+
 # Check if the FRONTEND_BUCKET environment variable is set
 if [ -z "$FRONTEND_BUCKET" ]; then
   echo "Error: FRONTEND_BUCKET environment variable is not set."

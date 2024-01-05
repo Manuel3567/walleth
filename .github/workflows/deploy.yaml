@@ -1,0 +1,61 @@
+name: Set Environment Variables
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # - uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     credentials_json: "${{ secrets.GOOGLE_CLOUD_KEYFILE_JSON }}"
+      # - name: "Set up Cloud SDK"
+      #   uses: "google-github-actions/setup-gcloud@v2"
+      #   with:
+      #     version: ">= 363.0.0"
+
+      # - name: "Install Node"
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "lts/gallium"
+
+      #- name: Install Terraform
+      #  uses: hashicorp/setup-terraform@v3
+      - name: Install dependencies
+        run: |
+          pwd
+          chmod +x scripts/install.sh
+          ./scripts/install.sh
+
+      - name: Set up GCP JSON
+        run: |
+          mkdir secrets
+          echo "${{ secrets.GOOGLE_CLOUD_KEYFILE_JSON }}" > secrets/gcp.json
+
+      - name: Set Environment Variables
+        run: |
+          echo "export GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .env.in
+          echo "export GCP_REGION=${{ vars.GCP_REGION }}" >> .env.in
+          echo "export APP_DOMAIN=${{ vars.APP_DOMAIN }}" >> .env.in
+          echo "export APP_VERSION=${{ vars.APP_VERSION }}" >> .env.in
+          echo "export AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env.in
+          echo "export AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.in
+          echo "export AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}" >> .env.in
+          echo "export CICD=${{ vars.CICD }}" >> .env.in
+
+      - name: Generate .env.out
+        run: |
+          chmod +x scripts/genenv.sh
+          ./scripts/genenv.sh
+
+      - name: Run build and deployment
+        run: |
+          chmod +x scripts/deploy.sh
+          source .env.out
+          ./scripts/deploy.sh

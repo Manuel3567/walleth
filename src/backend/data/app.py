@@ -16,12 +16,7 @@ def index():
     path = request.path
     headers = dict(request.headers)
     cookies = request.cookies
-    result = {
-        "path": path,
-        "headers": headers,
-        "cookies": cookies,
-        "service_name": SERVICE_NAME,
-    }
+    result = {"path": path, "headers": headers, "cookies": cookies, "service_name": SERVICE_NAME}
 
     return jsonify(result)
 

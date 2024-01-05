@@ -3,25 +3,37 @@ resource "google_service_account" "cluster" {
   display_name = "Kubernetes Cluster Service Account"
 }
 
-resource "google_kms_key_ring" "keyring" {
+# was created with terraform but subsecquently forgotten
+#resource "google_kms_key_ring" "keyring" {
+#  name     = "kubernetes_keyring"
+#  location = var.gcp_region
+#  # cannot be deleted
+#  lifecycle {
+#    prevent_destroy = true
+#  }
+#}
+#
+#resource "google_kms_crypto_key" "etcd_key" {
+#  name            = "kubernetes"
+#  key_ring        = google_kms_key_ring.keyring.id
+#  rotation_period = "10368000s" # 120 days
+#
+#  # cannot be deleted with terraform, better to never delete
+#  lifecycle {
+#    prevent_destroy = true
+#  }
+#}
+
+data "google_kms_key_ring" "keyring" {
   name     = "kubernetes_keyring"
   location = var.gcp_region
-  # cannot be deleted
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
-resource "google_kms_crypto_key" "etcd_key" {
-  name            = "kubernetes"
-  key_ring        = google_kms_key_ring.keyring.id
-  rotation_period = "10368000s" # 120 days
-
-  # cannot be deleted with terraform, better to never delete
-  lifecycle {
-    prevent_destroy = true
-  }
+data "google_kms_crypto_key" "etcd_key" {
+  name     = "kubernetes"
+  key_ring = data.google_kms_key_ring.keyring.id
 }
+
 
 resource "google_project_iam_member" "artifactory_pull_permission" {
   project = var.gcp_project_id
@@ -32,7 +44,7 @@ resource "google_project_iam_member" "artifactory_pull_permission" {
 
 # note that the the default GKE service role does not get access to the KMS key automatically
 resource "google_kms_crypto_key_iam_binding" "etcd_key_access" {
-  crypto_key_id = google_kms_crypto_key.etcd_key.id
+  crypto_key_id = data.google_kms_crypto_key.etcd_key.id
   members = [
     "serviceAccount:${google_service_account.cluster.email}",
     "serviceAccount:service-${data.google_project.project.number}@container-engine-robot.iam.gserviceaccount.com", # default gke service account
@@ -63,7 +75,7 @@ resource "google_container_cluster" "primary" {
   }
   database_encryption {
     state    = "ENCRYPTED"
-    key_name = google_kms_crypto_key.etcd_key.id
+    key_name = data.google_kms_crypto_key.etcd_key.id
   }
 }
 

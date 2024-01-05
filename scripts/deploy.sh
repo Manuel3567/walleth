@@ -1,27 +1,33 @@
 #!/bin/bash
+echo "PHASE 0: Authenticating to GCP"
+#GCP_SECRET=$GOOGLE_CLOUD_KEYFILE_JSON
+#unset $GOOGLE_CLOUD_KEYFILE_JSON
+
+gcloud auth activate-service-account --key-file="$GOOGLE_CLOUD_KEYFILE_JSON"
 
 echo "PHASE 1: Static infrastructure deployment"
 echo "-----------------------------------------"
 echo
 cd $PROJECT_ROOT/deployment/01_static_infrastructure
-terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=$TF_STATE_PREFIX"
-terraform plan
-if [ $? -ne 0 ]; then
-  echo "Error: Terraform plan failed."
-  exit 1
-fi
-if [ "$CICD" = "true" ]; then
-    echo "CICD environment variable is set to true."
-    echo "Auto approve terraform"
-    terraform apply -auto-approve
-else
-    echo "CICD environment variable is either not set or not true."
-    terraform apply
-fi
-
+#TF_LOG="TRACE" terraform init -reconfigure -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=$TF_STATE_PREFIX"
+terraform init -reconfigure -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="prefix=$TF_STATE_PREFIX"
+terraform version
+# terraform plan
+# if [ $? -ne 0 ]; then
+#   echo "Error: Terraform plan failed."
+#   exit 1
+# fi
+# if [ "$CICD" = "true" ]; then
+#     echo "CICD environment variable is set to true."
+#     echo "Auto approve terraform"
+#     terraform apply -auto-approve
+# else
+#     echo "CICD environment variable is either not set or not true."
+#     terraform apply
+# fi
+#TF_LOG="TRACE" terraform apply -auto-approve
+terraform apply -auto-approve
 AUTH0_CLIENT_ID=$(terraform output -raw auth0_app_client_id)
-API_ADMIN_PASSWORD=$(terraform output -raw api_admin_password)
-API_VIEWER_PASSWORD=$(terraform output -raw api_viewer_password)
 API_IP=$(terraform output -raw api_load_balancer_ip)
 
 
@@ -165,7 +171,7 @@ ingress:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "api-load-balancer"
     kubernetes.io/ingress.class: "gce"
-    networking.gke.io/managed-certificates: api-managed-cert
+    networking.gke.io/managed-certificates: "api-tls-cert"
     kubernetes.io/ingress.allow-http: "false"
   hosts:
     - host: $API_DOMAIN
@@ -211,8 +217,10 @@ EOF
 echo "helm upgrade --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $deployscript
 echo "helm uninstall --namespace $KUBERNETES_NAMESPACE $KUBERNETES_BACKEND_RELEASE_NAME" > $destroyscript
 echo "helm upgrade --install --dry-run --debug --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $statusscript
-echo "kubectl --namespace $KUBERNETES_NAMESPACE logs -f -lapp.kubernetes.io/name={admin,data} --all-containers=true" >> $statusscript
 echo "kubectl --namespace $KUBERNETES_NAMESPACE describe ingress" >> $statusscript
+echo "kubectl --namespace $KUBERNETES_NAMESPACE logs -lapp.kubernetes.io/name={admin,data} --all-containers=true" >> $statusscript
+echo "kubectl exec -n $KUBERNETES_NAMESPACE $(kubectl get pods -n $KUBERNETES_NAMESPACE | grep data | cut -f 1 -d ' ') -- env" >> statusscript
+echo "kubectl exec -n $KUBERNETES_NAMESPACE $(kubectl get pods -n $KUBERNETES_NAMESPACE | grep admin | cut -f 1 -d ' ') -- env" >> statusscript
 
 helm upgrade \
   --install \

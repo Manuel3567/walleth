@@ -1,20 +1,3 @@
-resource "google_service_account" "bastion_service" {
-  account_id   = var.bastion_service_account_name
-  display_name = "Bastion Service Account"
-}
-
-resource "google_project_iam_member" "bastion_service_cloud_storage_permissions" {
-  project = var.gcp_project_id
-  role    = "roles/storage.admin"
-  member  = "serviceAccount:${google_service_account.bastion_service.email}"
-}
-
-resource "google_service_account_iam_member" "bastion_service_kubernetes_trust" {
-  service_account_id = google_service_account.bastion_service.id
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${var.kubernetes_namespace}/${var.bastion_service_account_name}]"
-}
-
 # Admin service
 resource "google_service_account" "admin_service" {
   account_id   = var.admin_service_account_name
