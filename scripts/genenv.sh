@@ -48,14 +48,14 @@ for var in "${env_vars[@]}"; do
 done
 
 
-GOOGLE_CLOUD_KEYFILE_JSON="$PROJECT_ROOT/secrets/gcp.json"
-if [ -e "$GOOGLE_CLOUD_KEYFILE_JSON" ]; then
-  echo "File exists: $GOOGLE_CLOUD_KEYFILE_JSON"
-else
-  echo "File does not exist: $GOOGLE_CLOUD_KEYFILE_JSON"
-  echo "Get credentials from GCP..."
-  exit 1
-fi
+#GOOGLE_CLOUD_KEYFILE_JSON="$PROJECT_ROOT/secrets/gcp.json"
+#if [ -e "$GOOGLE_CLOUD_KEYFILE_JSON" ]; then
+#  echo "File exists: $GOOGLE_CLOUD_KEYFILE_JSON"
+#else
+#  echo "File does not exist: $GOOGLE_CLOUD_KEYFILE_JSON"
+#  echo "Get credentials from GCP..."
+#  exit 1
+#fi
 
  
 env_out_file="$PROJECT_ROOT/.env.out"
@@ -76,7 +76,7 @@ API_DOMAIN="api.$APP_DOMAIN"
 API_URL="https://$API_DOMAIN"
 FRONTEND_BUCKET="frontend-$GCP_PROJECT_ID"
 AUTH0_REDIRECT_URI="$APP_URL"
-GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_CLOUD_KEYFILE_JSON"
+#GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_CLOUD_KEYFILE_JSON"
 CLOUDSDK_CORE_PROJECT="$GCP_PROJECT_ID"
 DOCKER_REGISTRY="$GCP_REGION-docker.pkg.dev"
 ARTIFACTORY_DOCKER_REPOSITORY_NAME="docker"
@@ -140,7 +140,7 @@ export APP_DOMAIN="$APP_DOMAIN"
 export AUTH0_DOMAIN="$AUTH0_DOMAIN"
 export AUTH0_CLIENT_ID="$AUTH0_CLIENT_ID"
 export AUTH0_CLIENT_SECRET="$AUTH0_CLIENT_SECRET"
-export GOOGLE_CLOUD_KEYFILE_JSON="$GOOGLE_CLOUD_KEYFILE_JSON" # for deploying infra and managing state 
+#export GOOGLE_CLOUD_KEYFILE_JSON="$GOOGLE_CLOUD_KEYFILE_JSON" # for deploying infra and managing state 
 
 
 
@@ -155,7 +155,7 @@ export AUTH0_REDIRECT_URI="$APP_URL"
 
 # extra APPLICATION_CREDENTIALS env variable needed for backend init
 # see: https://github.com/terraform-google-modules/cloud-foundation-training/issues/15
-export GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_CLOUD_KEYFILE_JSON" 
+#export GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_CLOUD_KEYFILE_JSON" 
 # used by gcloud
 export CLOUDSDK_CORE_PROJECT="$GCP_PROJECT_ID"
 

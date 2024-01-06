@@ -26,7 +26,7 @@ if [ -d "$BUILD_DIR" ]; then
 fi
 
 # Run npm build
-npm run build
+CI=false npm run build
 
 # Check if npm run build was successful
 if [ $? -ne 0 ]; then
@@ -41,11 +41,11 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 
 # Upload files to Google Cloud Storage
-if [ -z "$GOOGLE_CLOUD_KEYFILE_JSON" ]; then
-  echo "Error: GOOGLE_CLOUD_KEYFILE_JSON environment variable is not set. Path to json is required for authentication."
-  exit 1
-fi
-gcloud auth activate-service-account --key-file $GOOGLE_CLOUD_KEYFILE_JSON
+# if [ -z "$GOOGLE_CLOUD_KEYFILE_JSON" ]; then
+#   echo "Error: GOOGLE_CLOUD_KEYFILE_JSON environment variable is not set. Path to json is required for authentication."
+#   exit 1
+# fi
+# gcloud auth activate-service-account --key-file $GOOGLE_CLOUD_KEYFILE_JSON
 gsutil -m rsync -d -r "$BUILD_DIR" "gs://$FRONTEND_BUCKET"
 
 # Check if upload was successful

@@ -1,9 +1,4 @@
-name: Deploy infrastructure
-
-# on:
-#   push:
-#     branches:
-#       - main
+name: Destroy infrastructure
 
 on:
   workflow_dispatch:
@@ -22,25 +17,8 @@ jobs:
         uses: "google-github-actions/setup-gcloud@v2"
         with:
           version: ">= 363.0.0"
-
-      # - name: "Install Node"
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: "lts/gallium"
-
-      #- name: Install Terraform
-      #  uses: hashicorp/setup-terraform@v3
-      - name: Install dependencies
-        run: |
-          pwd
-          chmod +x scripts/install.sh
-          ./scripts/install.sh
-
-      #- name: Set up GCP JSON
-      #  run: |
-      #    mkdir secrets
-      #    echo "${{ secrets.GOOGLE_CLOUD_KEYFILE_JSON }}" > secrets/gcp.json
-
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
       - name: Set Environment Variables
         run: |
           echo "export GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .env.in
@@ -56,9 +34,8 @@ jobs:
         run: |
           chmod +x scripts/genenv.sh
           ./scripts/genenv.sh
-
-      - name: Run build and deployment
+      - name: Destroy
         run: |
-          chmod +x scripts/deploy.sh
+          chmod +x scripts/destroy.sh
           source .env.out
-          ./scripts/deploy.sh
+          ./scripts/destroy.sh

@@ -1,3 +1,4 @@
+{{- $fullName := include "ethereum.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,12 +37,19 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.env }}
+          {{- if or (.Values.env) (.Values.secrets) }}
           env:
             {{- range .Values.env }}
             - name: {{ .name }}
               valueFrom:
                 configMapKeyRef:
+                  name: {{ $fullName }}
+                  key: {{ .name | lower }} # The key to fetch.
+            {{- end }}
+            {{- range .Values.secrets }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
                   name: {{ $fullName }}
                   key: {{ .name | lower }} # The key to fetch.
             {{- end }}

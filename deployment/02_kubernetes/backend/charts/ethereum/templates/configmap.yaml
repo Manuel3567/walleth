@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name:  {{ include "data.fullname" . }}
+  name:  {{ include "ethereum.fullname" . }}
 data:
   {{- range .Values.env }}
   {{ .name | lower }}: {{ .value | quote }}

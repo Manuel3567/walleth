@@ -3,7 +3,7 @@ echo "PHASE 0: Authenticating to GCP"
 #GCP_SECRET=$GOOGLE_CLOUD_KEYFILE_JSON
 #unset $GOOGLE_CLOUD_KEYFILE_JSON
 
-gcloud auth activate-service-account --key-file="$GOOGLE_CLOUD_KEYFILE_JSON"
+#gcloud auth activate-service-account --key-file="$GOOGLE_CLOUD_KEYFILE_JSON"
 
 echo "PHASE 1: Static infrastructure deployment"
 echo "-----------------------------------------"
@@ -43,7 +43,7 @@ export REACT_APP_AUTH0_DOMAIN=$AUTH0_DOMAIN
 export REACT_APP_API=$TF_VAR_api_url
 export REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI
 export FRONTEND_BUCKET=$FRONTEND_BUCKET
-export GOOGLE_CLOUD_KEYFILE_JSON=$GOOGLE_CLOUD_KEYFILE_JSON
+#export GOOGLE_CLOUD_KEYFILE_JSON=$GOOGLE_CLOUD_KEYFILE_JSON
 
 cd $PROJECT_ROOT/src/frontend
 # create .env for frontend specific development
@@ -52,7 +52,7 @@ echo "export REACT_APP_AUTH0_DOMAIN=\"$REACT_APP_AUTH0_DOMAIN\"" >> .env
 echo "export REACT_APP_API=\"$REACT_APP_API\" # expects protocol http or https prefix" >> .env
 echo "export REACT_APP_AUTH0_REDIRECT_URI=\"$REACT_APP_AUTH0_REDIRECT_URI\"" >> .env
 echo "export FRONTEND_BUCKET=\"$FRONTEND_BUCKET\"" >> .env
-echo "export GOOGLE_CLOUD_KEYFILE_JSON=\"$GOOGLE_CLOUD_KEYFILE_JSON\"" >> .env
+#echo "export GOOGLE_CLOUD_KEYFILE_JSON=\"$GOOGLE_CLOUD_KEYFILE_JSON\"" >> .env
 
 ./deploy.sh
 
@@ -65,7 +65,8 @@ echo
 
 
 echo "Docker authentication to GCP Artifactory"
-cat $GOOGLE_CLOUD_KEYFILE_JSON | docker login -u _json_key --password-stdin https://$DOCKER_REGISTRY
+gcloud auth configure-docker us-central1-docker.pkg.dev
+#cat $GOOGLE_CLOUD_KEYFILE_JSON | docker login -u _json_key --password-stdin https://$DOCKER_REGISTRY
 
 echo "Building and deploying microservices"
 
@@ -187,6 +188,12 @@ ingress:
           backend:
             service:
               name: "$KUBERNETES_BACKEND_RELEASE_NAME-data"
+              port: 80
+        - path: /ethereum
+          pathType: Prefix
+          backend:
+            service:
+              name: "$KUBERNETES_BACKEND_RELEASE_NAME-ethereum"
               port: 80
 admin:
   image:
