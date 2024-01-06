@@ -1,2 +1,6 @@
 Flask
 gunicorn
+flask-cors
+requests
+pytest
+python-dotenv

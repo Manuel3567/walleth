@@ -58,11 +58,11 @@ resource "google_service_account" "ethereum_service" {
   display_name = "Ethereum Service Account"
 }
 
-resource "google_project_iam_member" "ethereum_service_cloud_storage_permissions" {
-  project = var.gcp_project_id
-  role    = "roles/storage.admin"
-  member  = "serviceAccount:${google_service_account.ethereum_service.email}"
-}
+# resource "google_project_iam_member" "ethereum_service_cloud_storage_permissions" {
+#   project = var.gcp_project_id
+#   role    = "roles/storage.admin"
+#   member  = "serviceAccount:${google_service_account.ethereum_service.email}"
+# }
 
 resource "google_service_account_iam_member" "ethereum_service_kubernetes_trust" {
   service_account_id = google_service_account.ethereum_service.id

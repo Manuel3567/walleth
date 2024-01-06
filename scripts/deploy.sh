@@ -213,6 +213,29 @@ data:
   service:
     type: ClusterIP
     port: 80
+
+ethereum:
+  env:
+    - name: SERVICE_NAME
+      value: $DOCKER_ETHEREUM_IMAGE_NAME
+    - name: API_URL
+      value: $APP_URL
+  secrets:
+    - name: ETHERSCAN_API_KEY
+      value: "$ETHERSCAN_API_KEY"
+  image:
+    repository: "$DOCKER_ETHEREUM_IMAGE_FULL_NAME"
+    tag: "$DOCKER_ETHEREUM_TAG"
+  serviceAccount:
+    annotations:
+      iam.gke.io/gcp-service-account: $ETHEREUM_SERVICE_ACCOUNT_NAME.iam.gserviceaccount.com
+  service:
+    type: ClusterIP
+    port: 80
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
 EOF
 echo "helm upgrade --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $deployscript
 echo "helm uninstall --namespace $KUBERNETES_NAMESPACE $KUBERNETES_BACKEND_RELEASE_NAME" > $destroyscript
