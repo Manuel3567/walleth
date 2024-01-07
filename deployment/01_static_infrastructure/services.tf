@@ -42,7 +42,7 @@ resource "google_service_account" "data_service" {
 
 resource "google_project_iam_member" "data_service_cloud_storage_permissions" {
   project = var.gcp_project_id
-  role    = "roles/storage.admin"
+  role    = "roles/datastore.owner"
   member  = "serviceAccount:${google_service_account.data_service.email}"
 }
 

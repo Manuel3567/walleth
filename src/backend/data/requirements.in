@@ -2,5 +2,8 @@ Flask
 gunicorn
 flask-cors
 google-cloud-firestore
+google-cloud-logging
 pytest
 pyjwt[crypto]
+python-dotenv
+requests

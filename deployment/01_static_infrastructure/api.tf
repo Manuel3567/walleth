@@ -8,6 +8,8 @@ resource "google_dns_record_set" "api_dns" {
   managed_zone = "app"
   rrdatas      = [google_compute_global_address.api_load_balancer_ip.address]
 }
+
+# requires modification in the Kubernetes ingress annotation if created here
 resource "google_compute_managed_ssl_certificate" "api_tls_cert" {
   name    = "api-tls-certificate"
   project = var.gcp_project_id

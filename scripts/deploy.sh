@@ -3,7 +3,6 @@ echo "PHASE 0: Authenticating to GCP"
 #GCP_SECRET=$GOOGLE_CLOUD_KEYFILE_JSON
 #unset $GOOGLE_CLOUD_KEYFILE_JSON
 
-#gcloud auth activate-service-account --key-file="$GOOGLE_CLOUD_KEYFILE_JSON"
 
 echo "PHASE 1: Static infrastructure deployment"
 echo "-----------------------------------------"
@@ -172,8 +171,9 @@ ingress:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "api-load-balancer"
     kubernetes.io/ingress.class: "gce"
-    networking.gke.io/managed-certificates: "api-tls-cert"
-    kubernetes.io/ingress.allow-http: "false"
+    #networking.gke.io/managed-certificates: "api-k8s-tls-certificate"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.gcp.kubernetes.io/pre-shared-cert: "api-tls-certificate"
   hosts:
     - host: $API_DOMAIN
       paths:
@@ -199,26 +199,40 @@ admin:
   image:
     repository: "$DOCKER_ADMIN_IMAGE_FULL_NAME"
     tag: "$DOCKER_ADMIN_TAG"
+    pullPolicy: Always
   serviceAccount:
+    name: $ADMIN_SERVICE_ACCOUNT_NAME
     annotations:
-      iam.gke.io/gcp-service-account: $ADMIN_SERVICE_ACCOUNT_NAME.iam.gserviceaccount.com
+      iam.gke.io/gcp-service-account: $ADMIN_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com
+  #nodeSelector:
+  #  iam.gke.io/gke-metadata-server-enabled: "true"
   service:
-    type: ClusterIP
+    type: NodePort # cannot be ServiceIP for Ingress to work
     port: 80
 data:
   env:
     - name: SERVICE_NAME
       value: $DOCKER_DATA_IMAGE_NAME
-    - name: API_URL
+    - name: APP_URL
       value: $APP_URL
+    - name: AUTH0_DOMAIN
+      value: $AUTH0_DOMAIN
+    - name: ETHEREUM_SERVICE_DOMAIN
+      value: "$DOCKER_ETHEREUM_IMAGE_NAME.$KUBERNETES_NAMESPACE.svc.cluster.local"
+    - name: TOKEN_AUDIENCE
+      value: $API_URL
   image:
     repository: "$DOCKER_DATA_IMAGE_FULL_NAME"
     tag: "$DOCKER_DATA_TAG"
+    pullPolicy: Always
   serviceAccount:
+    name: $DATA_SERVICE_ACCOUNT_NAME
     annotations:
-      iam.gke.io/gcp-service-account: $DATA_SERVICE_ACCOUNT_NAME.iam.gserviceaccount.com
+      iam.gke.io/gcp-service-account: $DATA_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com
+  #nodeSelector:
+  #  iam.gke.io/gke-metadata-server-enabled: "true"
   service:
-    type: ClusterIP
+    type: NodePort # cannot be ServiceIP for Ingress to work
     port: 80
 
 ethereum:
@@ -232,19 +246,23 @@ ethereum:
       value: "$ETHERSCAN_API_KEY"
   image:
     repository: "$DOCKER_ETHEREUM_IMAGE_FULL_NAME"
+    pullPolicy: Always
     tag: "$DOCKER_ETHEREUM_TAG"
   serviceAccount:
+    name: $ETHEREUM_SERVICE_ACCOUNT_NAME
     annotations:
-      iam.gke.io/gcp-service-account: $ETHEREUM_SERVICE_ACCOUNT_NAME.iam.gserviceaccount.com
+      iam.gke.io/gcp-service-account: $ETHEREUM_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com
+  #nodeSelector:
+  #  iam.gke.io/gke-metadata-server-enabled: "true"
   service:
-    type: ClusterIP
+    type: NodePort # cannot be ServiceIP for Ingress to work
     port: 80
   autoscaling:
     enabled: true
     minReplicas: 1
     maxReplicas: 5
 EOF
-echo "helm upgrade --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $deployscript
+echo "helm upgrade -i --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $deployscript
 echo "helm uninstall --namespace $KUBERNETES_NAMESPACE $KUBERNETES_BACKEND_RELEASE_NAME" > $destroyscript
 echo "helm upgrade --install --dry-run --debug --namespace $KUBERNETES_NAMESPACE -f $values $KUBERNETES_BACKEND_RELEASE_NAME $PROJECT_ROOT/deployment/02_kubernetes/backend" > $statusscript
 echo "kubectl --namespace $KUBERNETES_NAMESPACE describe ingress" >> $statusscript

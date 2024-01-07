@@ -1,7 +1,7 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: api-managed-cert
-spec:
-  domains:
-    - {{ .Values.ingress.domain }}
+#apiVersion: networking.gke.io/v1
+#kind: ManagedCertificate
+#metadata:
+#  name: api-k8s-tls-certificate
+#spec:
+#  domains:
+#    - {{ .Values.ingress.domain }}

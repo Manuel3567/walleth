@@ -51,6 +51,7 @@ jobs:
           echo "export AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.in
           echo "export AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}" >> .env.in
           echo "export CICD=${{ vars.CICD }}" >> .env.in
+          echo "export ETHERSCAN_API_KEY=${{ secrets.ETHERSCAN_API_KEY }}" >> .env.in
 
       - name: Generate .env.out
         run: |

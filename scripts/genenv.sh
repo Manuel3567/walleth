@@ -14,6 +14,7 @@ env_vars=(
     "AUTH0_CLIENT_ID"
     "AUTH0_CLIENT_SECRET"
     "CICD"
+    "ETHERSCAN_API_KEY"
 )
 
 SCRIPT_DIR=$(dirname $0)
@@ -61,8 +62,7 @@ done
 env_out_file="$PROJECT_ROOT/.env.out"
 if [ -e "$env_out_file" ]; then
   echo "File exists: $env_out_file"
-  echo "Aborting. Delete file first if you want to regenerate."
-  exit 1
+  echo "Overriding existing file."
 else
   echo "File does not exist: $env_out_file"
   echo "Generating $env_out_file file"
@@ -210,6 +210,7 @@ export DOCKER_ETHEREUM_TAG="$APP_VERSION"
 export DOCKER_ETHEREUM_IMAGE_FULL_NAME="$DOCKER_REPOSITORY/$DOCKER_ETHEREUM_IMAGE_NAME"
 export DOCKER_ETHEREUM="$DOCKER_ETHEREUM_IMAGE_FULL_NAME:$DOCKER_ETHEREUM_TAG"
 export TF_VAR_ethereum_service_account_name="$ETHEREUM_SERVICE_ACCOUNT_NAME"
+export ETHERSCAN_API_KEY="$ETHERSCAN_API_KEY"
 
 ### refresh
 export DOCKER_REFRESH_IMAGE_NAME="refresh"

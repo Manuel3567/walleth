@@ -17,7 +17,7 @@ const WalletTransactions = ({ walletAddress }) => {
                     Authorization: `Bearer ${token}`,
                 };
                 const api = process.env.REACT_APP_API;
-                const response = await fetch(api + '/data', {
+                const response = await fetch(api + '/data/', {
                     headers,
                 });
 

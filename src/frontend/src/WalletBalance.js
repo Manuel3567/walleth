@@ -20,7 +20,7 @@ const WalletBalance = ({ walletAddress }) => {
 
                 // Simulate fetching balance from localhost:80/headers
                 const api = process.env.REACT_APP_API;
-                const response = await fetch(api + '/data', {
+                const response = await fetch(api + '/data/', {
                     headers,
                 });
 
