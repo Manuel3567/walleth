@@ -27,10 +27,12 @@ resource "auth0_action" "add_email_to_access_token" {
    * @param {PostLoginAPI} api - Interface whose methods can be used to change the behavior of the login.
    */
   exports.onExecutePostLogin = async (event, api) => {
-    const namespace = '${var.api_url}';
+    //const namespace = '${var.api_url}';
     
     if (event.authorization) {
-        api.accessToken.setCustomClaim(namespace + '/email', event.user.email);
+        //api.accessToken.setCustomClaim(namespace + '/email', event.user.email);
+        api.accessToken.setCustomClaim('backend/email', event.user.email);
+
     }
   };
   EOT

@@ -3,11 +3,9 @@ import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-
 APP_URL = os.environ.get("APP_URL", "https://app.portfolioeth.de")
 SERVICE_NAME = os.environ.get("SERVICE_NAME", "ethereum")
 ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY" ,"")
-
 from dataclasses import dataclass
 
 @dataclass
@@ -64,7 +62,11 @@ app.config["ETHERSCAN_API_KEY"] = ETHERSCAN_API_KEY
 
 CORS(app=app, origins=[APP_URL], supports_credentials=True)
 
+import logging
+app.logger.setLevel(logging.INFO)
+
 def parse_balances_response(data):
+    app.logger.info(f"received etherscan data: {data}")
     return BalancesResponse(
         status=data.get('status'),
         message=data.get('message'),
@@ -82,6 +84,7 @@ def get_balances():
     api_key = app.config["ETHERSCAN_API_KEY"] 
     try:
         data = request.get_json()
+        app.logger.info(f"{request.remote_addr}: {data}")
         addresses = data.get('addresses')
         if not addresses:
             return jsonify({'error': 'Addresses not provided'}), 400
@@ -110,6 +113,7 @@ def get_transactions():
     api_key = app.config["ETHERSCAN_API_KEY"] 
     try:
         data = request.get_json()
+        app.logger.info(f"{request.remote_addr}: {data}")
         addresses = data.get('addresses')
 
         if not addresses:
@@ -120,6 +124,7 @@ def get_transactions():
             url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey={api_key}"
             response = requests.get(url)
             transactions_data = response.json()
+            app.logger.info(f"received etherscan data: {transactions_data}")
             transactions_response = TransactionsResponse(
                 status=transactions_data.get('status'),
                 message=transactions_data.get('message'),

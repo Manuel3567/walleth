@@ -1,3 +1,6 @@
 Flask
 gunicorn
 flask-cors
+google-cloud-firestore
+pytest
+pyjwt[crypto]

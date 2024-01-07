@@ -58,37 +58,37 @@ Runtime Components: Kubernetes service (NLB + set of pods)
 Interfaces: Output looks similar to input when inserting to Firebase. When querying the service the output looks similar to the input below.
 ```
 input = {
-    "user": "bob@example.com",
-    "customer": {
-        "name": "customer1",
-        "address": "Germany, 80805 Munich, Abcstrasse 3",
-        // ...
-        "wallets": [
-            {
-                "address": "0x123",
-                "balance": 10.3 // optional
-                "transactions": [
-                    {
-                        "blockNumber":"14923678",
-                        "timeStamp":"1654646411",
-                        "hash":"0xaaa",
-                        "blockHash":"0xbbb",
-                        "transactionIndex":"61",
-                        "from":"0x234",
-                        "to":"0x123",
-                        "value":"0",
-                        "gas":"6000000",
-                        "gasPrice":"83924748773",
-                        "isError":"0",
-                        "txreceipt_status":"1",
-                        "gasUsed": "4457269"
-        
-                    }
-                ]
-            }
-        ]
-    }
-
+        "user": "bob@example.com",
+        "customers": [{
+            "name": "customer1",
+            "address": "Germany, 80805 Munich, Abcstrasse 3", // optional
+            // ...
+            "wallets": [
+                {
+                    "account": "0x123",
+                    "balance": 10.3 // optional
+                    "transactions": [
+                        {
+                            "blockNumber":"14923678",
+                            "timeStamp":"1654646411",
+                            "hash":"0xaaa",
+                            "blockHash":"0xbbb",
+                            "transactionIndex":"61",
+                            "from_address":"0x234",
+                            "to_address":"0x123",
+                            "value":"0",
+                            "gas":"6000000",
+                            "gasPrice":"83924748773",
+                            "isError":"0",
+                            "txreceipt_status":"1",
+                            "gasUsed": "4457269",
+                            ...
+            
+                        }
+                    ]
+                }
+            ]
+        }]
 }
 ```
 Datastores: Firestore
