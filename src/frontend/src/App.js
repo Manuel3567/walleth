@@ -1,35 +1,21 @@
-// src/App.js
-import React from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
-import WalletBalance from './WalletBalance';
-import WalletTransactions from './WalletTransactions';
+import { Outlet } from "react-router-dom";
+import Topbar from './scenes/global/Topbar';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
 
-const App = () => {
-  const { loginWithRedirect, logout, user, isAuthenticated } = useAuth0();
-  console.log('Is Authenticated:', isAuthenticated);
-  console.log('User', user);
-  return (
-    <div>
-      <header>
-        <h1>Ethereum Wallet Tracker</h1>
-        {isAuthenticated ? (
-          <>
-            <p>Hello, {user.name}!</p>
-            <button onClick={() => logout()}>Logout</button>
-          </>
-        ) : (
-          <button onClick={() => loginWithRedirect()}>Login</button>
-        )}
-      </header>
+//import Topbar from './scenes/global/Topbar'
 
-      {isAuthenticated && (
-        <main>
-          <WalletBalance walletAddress="YOUR_WALLET_ADDRESS" />
-          <WalletTransactions walletAddress="YOUR_WALLET_ADDRESS" />
-        </main>
-      )}
-    </div>
-  );
-};
+const defaultTheme = createTheme();
+export default function App() {
 
-export default App;
+    return (
+        <ThemeProvider theme={defaultTheme}>
+            <Box sx={{ display: 'flex' }}>
+                <CssBaseline />
+                <Topbar />
+                <Outlet />
+            </Box>
+        </ThemeProvider>
+    );
+}

@@ -4,7 +4,7 @@ resource "google_storage_bucket" "frontend_bucket" {
   force_destroy = true
   website {
     main_page_suffix = "index.html"
-    not_found_page   = "404.html"
+    not_found_page   = "index.html" # hack for GCP to work with react router
   }
   cors {
     origin          = ["*"]
