@@ -5,9 +5,12 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Copyright from '../../components/Copyright';
+import CustomerTable from '../../components/CustomerTable';
+import { useOutletContext } from 'react-router-dom';
 
 
 export default function Customers() {
+    const [data, setData] = useOutletContext();
 
     return (
         <Box
@@ -23,33 +26,8 @@ export default function Customers() {
         >
             <Toolbar />
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} md={8} lg={9}>
-                        <Paper
-                            sx={{
-                                p: 2,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: 240,
-                            }}
-                        >
-                        </Paper>
-                    </Grid>
-                    <Grid item xs={12} md={4} lg={3}>
-                        <Paper
-                            sx={{
-                                p: 2,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: 240,
-                            }}
-                        >
-                        </Paper>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                        </Paper>
-                    </Grid>
+                <Grid item xs={12} md={12} lg={12}>
+                    <CustomerTable data={data} setData={setData} />
                 </Grid>
                 <Copyright sx={{ pt: 4 }} />
             </Container>

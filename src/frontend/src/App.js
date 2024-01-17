@@ -6,12 +6,19 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import { useAuth0 } from "@auth0/auth0-react";
+import Error from "./scenes/errors/Error";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Portfolio from './scenes/portfolio/Portfolio';
+import Company from './scenes/company/Company';
+import Premium from './scenes/premium/Premium';
+import Profile from './scenes/profile/Profile';
+import Customers from './scenes/customers/Customers';
 
 
 //import Topbar from './scenes/global/Topbar'
 
 function AuthenticatedApp() {
-    const [customers, setCustomers] = useState({ 'customers': [] });
+    const [data, setData] = useState({ 'customers': [] });
 
     const { getAccessTokenSilently } = useAuth0();
 
@@ -23,7 +30,7 @@ function AuthenticatedApp() {
                 return;
             }
             const accessToken = await getAccessTokenSilently();
-            const { data, error } = await fetch(
+            const response = await fetch(
                 process.env.REACT_APP_API + '/data/', {
                 'headers': {
                     'Authorization': `Bearer ${accessToken}`
@@ -31,14 +38,11 @@ function AuthenticatedApp() {
             }
             );
 
-            if (data) {
-                setCustomers(data);
+            if (response.ok) {
+                let new_data = await response.json();
+                setData(new_data);
             }
 
-            if (error) {
-                console.log("Error fetching data");
-                console.log(error);
-            }
         };
 
         getData();
@@ -46,33 +50,40 @@ function AuthenticatedApp() {
         return () => {
             isMounted = false;
         };
-    }, [getAccessTokenSilently]);
+    }, [getAccessTokenSilently, setData]);
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <Topbar />
-            <Outlet context={[customers, setCustomers]} />
+            <Outlet context={[data, setData]} />
         </Box>
     )
 }
 
-const defaultTheme = createTheme();
 export default function App() {
     const { isAuthenticated } = useAuth0();
     if (isAuthenticated) {
         return (
-            <ThemeProvider theme={defaultTheme}>
-                <AuthenticatedApp />
-            </ThemeProvider>
+            <HashRouter>
+                <Routes>
+                    <Route path='/' element={<AuthenticatedApp />}>
+                        <Route path='/portfolio' element={<Portfolio />} />
+                        <Route path='/company' element={<Company />} />
+                        <Route path='/customers' element={<Customers />} />
+                        <Route path='/profile' element={<Profile />} />
+                        <Route path='/trades' element={<Premium />} />
+                        <Route path='/reports' element={<Premium />} />
+                    </Route>
+                </Routes>
+            </HashRouter>
         );
     } else {
         return (
-            <ThemeProvider theme={defaultTheme}>
-                <Box sx={{ display: 'flex' }}>
-                    <CssBaseline />
-                    <HomePage />
-                </Box>
-            </ThemeProvider>
+            <Box sx={{ display: 'flex' }}>
+                <CssBaseline />
+                <HomePage />
+            </Box>
         );
 
     }

@@ -10,8 +10,8 @@ function preventDefault(event) {
 }
 
 
-export default function Balance({ customers }) {
-    const totalBalance = sumBalances(customers);
+export default function Balance({ data }) {
+    const totalBalance = sumBalances(data);
 
     return (
         <React.Fragment>

@@ -14,7 +14,8 @@ import Copyright from '../../components/Copyright';
 
 
 export default function Portfolio() {
-    const [customers, setCustomers] = useOutletContext();
+    const [data, setData] = useOutletContext();
+    //console.log(JSON.stringify(data));
 
     return (
         <Box
@@ -32,7 +33,7 @@ export default function Portfolio() {
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                 <Grid container spacing={3}>
                     {/* Chart */}
-                    <Grid item xs={12} md={8} lg={9}>
+                    {/*<Grid item xs={12} md={8} lg={9}>
                         <Paper
                             sx={{
                                 p: 2,
@@ -41,9 +42,10 @@ export default function Portfolio() {
                                 height: 240,
                             }}
                         >
-                            <Chart />
+                            {JSON.stringify(data)}
                         </Paper>
                     </Grid>
+                        */}
                     {/* Recent Balance */}
                     <Grid item xs={12} md={4} lg={3}>
                         <Paper
@@ -54,13 +56,13 @@ export default function Portfolio() {
                                 height: 240,
                             }}
                         >
-                            <Balance customers={customers} />
+                            <Balance data={data} />
                         </Paper>
                     </Grid>
                     {/* Recent Transactions */}
                     <Grid item xs={12}>
                         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                            <Transactions />
+                            <Transactions data={data} />
                         </Paper>
                     </Grid>
                 </Grid>

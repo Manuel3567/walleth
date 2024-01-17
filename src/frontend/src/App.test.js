@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 import Balance from './scenes/portfolio/Balance';
+import Transactions from './scenes/portfolio/Transactions';
 import { getCustomers } from './data/mockCustomers';
 import { sumBalances, filterCustomerBalances } from './data/api';
 
@@ -63,7 +64,15 @@ test('renders Budget', () => {
             }
         ]
     }
-    render(<Balance customers={data} />);
+    render(<Balance data={data} />);
     const textElement = screen.getByText("ETH 0");
-    expect(textElement).not.toBeInTheDocument();
+    expect(textElement).toBeInTheDocument();
+});
+
+test('renders Transactions', () => {
+    const data = getCustomers();
+    render(<Transactions data={data} />);
+    const textElement = screen.getByText("Smart Contract");
+    expect(textElement).toBeInTheDocument();
+
 });

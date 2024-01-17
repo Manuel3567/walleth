@@ -13,6 +13,12 @@ export function sumBalances(data) {
     return totalBalance;
 }
 
+export function filterTransactions(data) {
+    let res = [];
+    let cs = data.customers;
+    cs.forEach(c => { c.wallets.forEach(w => { res.push(...w.transactions) }) });
+    return res;
+}
 
 export function filterCustomerBalances(data) {
     const customers = data.customers

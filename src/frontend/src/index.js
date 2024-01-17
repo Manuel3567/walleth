@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Error from "./scenes/errors/Error";
 import { createBrowserRouter, createHashRouter, RouterProvider } from "react-router-dom";
 import Portfolio from './scenes/portfolio/Portfolio';
@@ -12,46 +13,49 @@ import Customers from './scenes/customers/Customers';
 import AuthProvider from './Auth0Provider';
 
 
-const router = createHashRouter([
-    {
-        path: "/",
-        element: <App />,
-        errorElement: <Error />,
-        children: [
-            {
-                path: "portfolio",
-                element: <Portfolio />,
-            },
-            {
-                path: "company",
-                element: <Company />,
-            },
-            {
-                path: "profile",
-                element: <Profile />,
-            },
-            {
-                path: "trades",
-                element: <Premium />,
-            },
-            {
-                path: "reports",
-                element: <Premium />,
-            },
-            {
-                path: "customers",
-                element: <Customers />,
-            },
-        ]
-    },
+//const router = createHashRouter([
+//    {
+//        path: "/",
+//        element: <App />,
+//        errorElement: <Error />,
+//        children: [
+//            {
+//                path: "portfolio",
+//                element: <Portfolio />,
+//            },
+//            {
+//                path: "company",
+//                element: <Company />,
+//            },
+//            {
+//                path: "profile",
+//                element: <Profile />,
+//            },
+//            {
+//                path: "trades",
+//                element: <Premium />,
+//            },
+//            {
+//                path: "reports",
+//                element: <Premium />,
+//            },
+//            {
+//                path: "customers",
+//                element: <Customers />,
+//            },
+//        ]
+//    },
+//
+//]);
 
-]);
-
+const defaultTheme = createTheme();
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
     <React.StrictMode>
         <AuthProvider>
-            <RouterProvider router={router} />
+            <ThemeProvider theme={defaultTheme}>
+                <App />
+            </ThemeProvider>
         </AuthProvider>
     </React.StrictMode>
 );
