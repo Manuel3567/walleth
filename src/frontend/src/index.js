@@ -9,6 +9,7 @@ import Company from './scenes/company/Company';
 import Premium from './scenes/premium/Premium';
 import Profile from './scenes/profile/Profile';
 import Customers from './scenes/customers/Customers';
+import AuthProvider from './Auth0Provider';
 
 
 const router = createHashRouter([
@@ -49,6 +50,8 @@ const router = createHashRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
     <React.StrictMode>
-        <RouterProvider router={router} />
+        <AuthProvider>
+            <RouterProvider router={router} />
+        </AuthProvider>
     </React.StrictMode>
 );

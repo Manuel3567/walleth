@@ -13,6 +13,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Typography from '@mui/material/Typography';
 import { mainListItems, secondaryListItems } from './listItems';
+import { LogoutButton } from '../../components/Authentication';
 
 
 const drawerWidth = 240;
@@ -64,7 +65,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 function Title() {
     return (
-        <Typography component="h1" variant="h4" color="black" font-weight="bold" gutterBottom>
+        <Typography component="h1" variant="h4" color="black" fontWeight="bold" gutterBottom>
             Portfolioeth
         </Typography>
     );
@@ -102,6 +103,7 @@ export default function Topbar() {
                     <Box sx={{ flexGrow: 1 }} />
                     <Title />
                     <Box sx={{ flexGrow: 1 }} />
+                    <LogoutButton />
                     <IconButton color="inherit">
                         <Link href="#profile">
                             <Avatar />

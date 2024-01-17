@@ -19,7 +19,7 @@ AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "")
 ETHEREUM_SERVICE_DOMAIN = os.environ.get("ETHEREUM_SERVICE_DOMAIN", "")
 TOKEN_AUDIENCE = os.environ.get("TOKEN_AUDIENCE", "")
 app = Flask(__name__)
-CORS(app=app, origins=[APP_URL], supports_credentials=True)
+CORS(app=app, origins=[APP_URL, "http://localhost:3000", "localhost:3000"], supports_credentials=True)
 
 
 import logging

@@ -63,7 +63,7 @@ resource "auth0_client" "walleth" {
   #is_token_endpoint_ip_header_trusted = true # only set if not first party
   oidc_conformant = true
   # TODO: abstract
-  callbacks           = [var.auth0_redirect_uri]
+  callbacks           = [var.auth0_redirect_uri, "http://localhost:3000/callback"]
   allowed_origins     = [var.app_url]
   allowed_logout_urls = [var.app_url]
   web_origins         = [var.app_url]

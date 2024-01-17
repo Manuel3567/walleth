@@ -2,20 +2,22 @@ import * as React from 'react';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Title from './Title';
+import { sumBalances } from '../../data/api';
+
 
 function preventDefault(event) {
     event.preventDefault();
 }
 
-export default function Balance() {
+
+export default function Balance({ customers }) {
+    const totalBalance = sumBalances(customers);
+
     return (
         <React.Fragment>
             <Title>Balance</Title>
             <Typography component="p" variant="h4">
-                $3,024.00
-            </Typography>
-            <Typography color="text.secondary" sx={{ flex: 1 }}>
-                on 15 March, 2019
+                ETH {totalBalance}
             </Typography>
             <div>
                 <Link color="primary" href="#" onClick={preventDefault}>

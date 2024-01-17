@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useOutletContext } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
@@ -12,8 +13,8 @@ import Copyright from '../../components/Copyright';
 
 
 
-
 export default function Portfolio() {
+    const [customers, setCustomers] = useOutletContext();
 
     return (
         <Box
@@ -53,7 +54,7 @@ export default function Portfolio() {
                                 height: 240,
                             }}
                         >
-                            <Balance />
+                            <Balance customers={customers} />
                         </Paper>
                     </Grid>
                     {/* Recent Transactions */}
