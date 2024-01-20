@@ -218,7 +218,7 @@ data:
     - name: AUTH0_DOMAIN
       value: $AUTH0_DOMAIN
     - name: ETHEREUM_SERVICE_DOMAIN
-      value: "$DOCKER_ETHEREUM_IMAGE_NAME.$KUBERNETES_NAMESPACE.svc.cluster.local"
+      value: "$KUBERNETES_BACKEND_RELEASE_NAME-ethereum.$KUBERNETES_NAMESPACE.svc.cluster.local"
     - name: TOKEN_AUDIENCE
       value: $API_URL
   image:

@@ -24,6 +24,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth0 } from "@auth0/auth0-react";
 
+
+function hash(s) {
+    for (var i = 0, h = 9; i < s.length;)h = Math.imul(h ^ s.charCodeAt(i++), 9 ** 9); return h ^ h >>> 9
+}
+
 function CustomerTable({ data, setData }) {
     const [customers, setCustomers] = useState([...data.customers]);
     const [editMode, setEditMode] = useState(false);
@@ -60,14 +65,22 @@ function CustomerTable({ data, setData }) {
         );
     };
 
-    const handleAddWallet = (customer) => {
+    const handleAddWallet = (customerIndex) => {
+        let customer = customers[customerIndex];
         if (newWallet && newWallet.address.trim() !== '') {
             const isExistingWallet = customer.wallets.some((wallet) => wallet.address === newWallet.address);
             if (!isExistingWallet) {
+                delete newWallet.customer;
                 customer.wallets.push(newWallet);
                 setNewWalletCustomers([...newWalletCustomers, customer]);
+                //setCustomers([...customers.splice(customerIndex, 0, customer)]);
+            } else {
+                console.log("wallet already exists");
             }
+        } else {
+            console.log("error adding wallet");
         }
+        setNewWallet(null);
     }
 
     const handleAddCustomer = () => {
@@ -103,26 +116,19 @@ function CustomerTable({ data, setData }) {
     };
 
 
-    const handleDeleteWallet = (customerId, walletIndex) => {
-        setCustomers((prevCustomers) => {
-            const updatedCustomers = [...prevCustomers];
-            const customerIndex = updatedCustomers.findIndex(
-                (customer) => customer.id === customerId
-            );
-            updatedCustomers[customerIndex].wallets.splice(
-                walletIndex,
-                1
-            );
-            return updatedCustomers;
-        });
-        setNewCustomers((prevNewCustomers) => {
-            const updatedNewCustomers = [...prevNewCustomers];
-            const newCustomerIndex = updatedNewCustomers.findIndex(
-                (customer) => customer.id === customerId
-            );
-            updatedNewCustomers[newCustomerIndex].wallets.splice(walletIndex, 1);
-            return updatedNewCustomers;
-        });
+    const handleDeleteWallet = (customerIndex, walletIndex, wallet) => {
+        // remove from customers
+        console.log("Deleting wallet...");
+        console.log(wallet);
+        console.log(customerIndex);
+        let customer = customers[customerIndex];
+        customer.wallets = [customer.wallets.filter(w => w.address !== wallet.address)]
+        setCustomers(customers.splice(customerIndex, 1, customer));
+        // remove from newWalletCostumers
+        setNewWalletCustomers(newWalletCustomers.filter(c => c.name !== customer.name && !c.wallets.includes({ address: wallet.address })));
+
+
+
     };
 
     const handleDeleteCustomer = (customerName) => {
@@ -135,9 +141,9 @@ function CustomerTable({ data, setData }) {
     const handleCommit = async () => {
         const accessToken = await getAccessTokenSilently();
 
-        //create customers
+        //new wallet customers
         let payload = {
-            customers: newCustomers,
+            customers: newWalletCustomers,
         };
 
         try {
@@ -156,6 +162,26 @@ function CustomerTable({ data, setData }) {
             console.error('Error creating customers:', error.message);
         }
 
+        //create customers
+        payload = {
+            customers: newCustomers,
+        };
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                console.log(`failed to create customers: ${payload}`);
+            }
+        } catch (error) {
+            console.error('Error creating customers:', error.message);
+        }
         // delete customers
         payload = {
             customers: removeCustomers,
@@ -183,43 +209,11 @@ function CustomerTable({ data, setData }) {
         setNewCustomers([]);
         setRemoveCustomers([]);
         setEditMode(!editMode);
+        setNewWalletCustomers([]);
+        setNewWallet(null);
 
     };
 
-
-    const deleteCustomers = async () => {
-        const payload = {
-            //customers: selected.map((name) => ({ name })),
-        };
-
-        try {
-            const accessToken = await getAccessTokenSilently();
-            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                //const updatedRows = rows.filter((row) => !selected.includes(row.name));
-                //const updatedData = {
-                //    ...data,
-                //    customers: data.customers.filter((customer) => !selected.includes(customer.name)),
-                //};
-                //setSelected([]);
-                //setData(updatedData);
-                //setRows(updatedRows);
-            } else {
-                console.error('Failed to delete customers:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error deleting customers:', error.message);
-        }
-    };
-    console.log(data);
 
     return (
         <Box>
@@ -243,7 +237,7 @@ function CustomerTable({ data, setData }) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {customers.map((customer) => (
+                        {customers.map((customer, customerIndex) => (
                             <React.Fragment key={customer.name}>
                                 <TableRow
                                     hover
@@ -253,16 +247,16 @@ function CustomerTable({ data, setData }) {
                                     <TableCell>{customer.email}</TableCell>
                                     <TableCell>{customer.phone}</TableCell>
                                     <TableCell>{customer.address}</TableCell>
-                                    <TableCell>
+                                    {editMode && <TableCell>
                                         <IconButton
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDeleteCustomer(customer.name);
                                             }}
                                         >
-                                            {editMode && <DeleteIcon />}
+                                            <DeleteIcon />
                                         </IconButton>
-                                    </TableCell>
+                                    </TableCell>}
                                 </TableRow>
                                 <TableRow>
                                     <TableCell colSpan={7}>
@@ -273,23 +267,57 @@ function CustomerTable({ data, setData }) {
                                                 <Typography gutterBottom>
                                                     Wallets
                                                 </Typography>
+                                                <TableRow>
+                                                    <TableCell>Address</TableCell>
+                                                    <TableCell></TableCell>
+                                                </TableRow>
+                                                {customer.wallets.map((wallet, walletIndex) => (
+                                                    <React.Fragment key={customer.name.concat(wallet.address)}>
+                                                        <TableRow hover onClick={() => handleRowClick(customer.name)}>
+                                                            <TableCell>{wallet.address}</TableCell>
+                                                            {editMode && <>
+                                                                <TableCell>
+                                                                    <IconButton
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDeleteWallet(customerIndex, walletIndex, wallet);
+                                                                        }}
+                                                                    >
+                                                                        <DeleteIcon />
+                                                                    </IconButton>
+                                                                </TableCell>
+                                                            </>}
+                                                        </TableRow>
+                                                    </React.Fragment>
+                                                ))}
+                                                {editMode && newWallet !== null && newWallet.customer === customer.name &&
+                                                    <TableRow>
+                                                        <TableCell>
+                                                            <TextField
+                                                                value={newWallet.address}
+                                                                onChange={(e) => setNewWallet({ ...newWallet, address: e.target.value })}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {/* Button to add newWallet or save changes */}
+                                                            <IconButton onClick={(e) => setNewWallet(null)}>
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {/* Button to add newWallet or save changes */}
+                                                            <IconButton onClick={(e) => handleAddWallet(customerIndex)}>
+                                                                <CheckIcon />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>}
+
                                                 {editMode && (
                                                     <IconButton
-                                                        onClick={() =>
-                                                            setCustomers((prevCustomers) => {
-                                                                const updatedCustomers = [
-                                                                    ...prevCustomers,
-                                                                ];
-                                                                const customerIndex =
-                                                                    updatedCustomers.findIndex(
-                                                                        (c) => c.name === customer.name
-                                                                    );
-                                                                updatedCustomers[
-                                                                    customerIndex
-                                                                ].wallets.push('');
-                                                                return updatedCustomers;
-                                                            })
-                                                        }
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setNewWallet({ 'address': '', 'customer': customer.name });
+                                                        }}
                                                     >
                                                         <AddIcon />
                                                     </IconButton>
