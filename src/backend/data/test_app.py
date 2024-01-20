@@ -53,7 +53,9 @@ def test_delete_customer(client, user_document):
 
     # Test the DELETE endpoint
     data = {"customers": [{"name": customer_name}]}
-    response = client.delete("/", json=data, headers={"Authorization": access_token})
+    response = client.delete(
+        "/data/", json=data, headers={"Authorization": f"Bearer: {access_token}"}
+    )
     assert response.status_code == 200
 
     # Verify the customer has been deleted
@@ -70,13 +72,17 @@ def test_create_and_get_customer(client, user_document):
     customer_name = "d customer"
 
     data = {"customers": [{"name": customer_name}]}
-    response = client.post("/", json=data, headers={"Authorization": access_token})
+    response = client.post(
+        "/data/", json=data, headers={"Authorization": f"Bearer: {access_token}"}
+    )
     assert response.status_code == 200
     customers = user_document.collection("customers")
     customer = customers.document(customer_name)
     assert customer.get().exists
 
-    response = client.get("/", headers={"Authorization": access_token})
+    response = client.get(
+        "/data/", headers={"Authorization": f"Bearer: {access_token}"}
+    )
     assert response.status_code == 200
     result = response.get_json()
     assert result["email"] == user_email
@@ -104,16 +110,21 @@ def test_create_and_get_multiple_customers_with_wallets(client, user_document):
             },
         ]
     }
-    response = client.post("/", json=data, headers={"Authorization": access_token})
+    response = client.post(
+        "/data/", json=data, headers={"Authorization": f"Bearer: {access_token}"}
+    )
     assert response.status_code == 200
     assert user_document.collection("customers").document(customer_name).get().exists
     assert user_document.collection("customers").document(customer_name2).get().exists
 
-    response = client.get("/", headers={"Authorization": access_token})
+    response = client.get(
+        "/data/", headers={"Authorization": f"Bearer: {access_token}"}
+    )
     assert response.status_code == 200
     result = response.get_json()
     assert result["email"] == user_email
     assert set(result["customers"][-1]["wallets"][0].keys()) == {
+        "address",
         "balance",
         "transactions",
     }

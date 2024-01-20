@@ -8,6 +8,9 @@ import TableRow from '@mui/material/TableRow';
 import Title from './Title';
 import { filterTransactions } from '../../data/api';
 
+function hash(s) {
+    for (var i = 0, h = 9; i < s.length;)h = Math.imul(h ^ s.charCodeAt(i++), 9 ** 9); return h ^ h >>> 9
+}
 
 function preventDefault(event) {
     event.preventDefault();
@@ -30,7 +33,7 @@ export default function Transactions({ data }) {
                 </TableHead>
                 <TableBody>
                     {ts.map((t) => (
-                        <TableRow key={t.hash}>
+                        <TableRow key={hash(JSON.stringify(t))}>
                             <TableCell>{(new Date(parseInt(t.timeStamp) * 1000)).toLocaleString('de')}</TableCell>
                             <TableCell>{t.input ? "Smart Contract" : "Transfer"}</TableCell>
                             <TableCell>{t.from_address}</TableCell>

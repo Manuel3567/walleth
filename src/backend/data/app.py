@@ -19,7 +19,11 @@ AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "")
 ETHEREUM_SERVICE_DOMAIN = os.environ.get("ETHEREUM_SERVICE_DOMAIN", "")
 TOKEN_AUDIENCE = os.environ.get("TOKEN_AUDIENCE", "")
 app = Flask(__name__)
-CORS(app=app, origins=[APP_URL, "http://localhost:3000", "localhost:3000"], supports_credentials=True)
+CORS(
+    app=app,
+    origins=[APP_URL, "http://localhost:3000", "localhost:3000"],
+    supports_credentials=True,
+)
 
 
 import logging
@@ -203,13 +207,13 @@ def handle_requests():
             for wallet in wallets:
                 account = wallet["account"]
                 wallet_ref = wallets_ref.document(account)
-                wallet_ref.set({"account": account})
                 if not wallet.get("balance") or not wallet.get("transactions"):
                     missing_wallet_addresses.append(account)
-                    wallet_ref.set({"balance": None, "transactions": None})
+                    wallet_ref.set({"address": account, "balance": None, "transactions": None})
                 else:
                     wallet_ref.set(
                         {
+                            "address": account,
                             "balance": wallet.get("balance"),
                             "transactions": wallet.get("transactions"),
                         }
@@ -224,6 +228,7 @@ def handle_requests():
                 wallet_ref = wallets_ref.document(wallet_address)
                 wallet_ref.set(
                     {
+                        "address": wallet_address,
                         "balance": missing_data[wallet_address]["balance"],
                         "transactions": missing_data[wallet_address]["transactions"],
                     }
