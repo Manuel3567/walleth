@@ -22,43 +22,39 @@ function AuthenticatedApp() {
 
     const { getAccessTokenSilently } = useAuth0();
 
+    const getData = async () => {
+        const accessToken = await getAccessTokenSilently();
+        const response = await fetch(
+            process.env.REACT_APP_API + '/data/', {
+            'headers': {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        }
+        );
+
+        if (response.ok) {
+            const new_data = await response.json();
+            setData(new_data);
+        }
+    };
+
+    const handleUpdateToData = async (event) => {
+        if ((!event.request.url.includes('/data/'))) return;
+        await getData();
+    };
+
     useEffect(() => {
         let isMounted = true;
-        async function handlePostToData(event) {
-            if ((event.request.method === "GET") && (!event.request.url.includes('/data/'))) return;
-            getData();
-        }
-
-        const getData = async () => {
-            if (!isMounted) {
-                return;
-            }
-            const accessToken = await getAccessTokenSilently();
-            const response = await fetch(
-                process.env.REACT_APP_API + '/data/', {
-                'headers': {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }
-            );
-
-            if (response.ok) {
-                let new_data = await response.json();
-                setData(new_data);
-            }
-
-        };
 
         getData();
-        window.addEventListener('fetch', (event => {
-
-        }));
+        window.addEventListener('navigate', handleUpdateToData);
 
         return () => {
             isMounted = false;
-            window.removeEventListener('fetch', handlePostToData);
+            window.removeEventListener('navigate', handleUpdateToData);
         };
     }, [getAccessTokenSilently, setData]);
+
 
     return (
         <Box sx={{ display: 'flex' }}>

@@ -110,8 +110,8 @@ def test_create_and_get_multiple_customers_with_wallets(client, user_document):
                 "name": customer_name2,
                 "address": "abc-street",
                 "wallets": [
-                    {"account": "0x9aa99c23f67c81701c772b106b4f83f6e858dd2e"},
-                    {"account": "0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc"},
+                    {"address": "0x9aa99c23f67c81701c772b106b4f83f6e858dd2e"},
+                    {"address": "0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc"},
                 ],
             },
         ]
@@ -129,8 +129,58 @@ def test_create_and_get_multiple_customers_with_wallets(client, user_document):
     assert response.status_code == 200
     result = response.get_json()
     assert result["email"] == user_email
-    assert set(result["customers"][-1]["wallets"][0].keys()) == {
-        "address",
-        "balance",
-        "transactions",
+    for customer in result["customers"]:
+        if customer["name"] != "f customer":
+            continue
+        assert set(customer["wallets"][0].keys()) == {
+            "address",
+            "balance",
+            "transactions",
+        }
+
+
+def test_create_customer_and_add_wallet(client, user_document):
+    # Setup: Create a test user and customer in Firestore
+    user_email = os.environ["EMAIL"]
+    access_token = os.environ["TOKEN"]
+
+    customer_name = "g customer"
+    data = {
+        "customers": [
+            {
+                "name": customer_name,
+                "wallets": [
+                    {"address": "0x9aa99c23f67c81701c772b106b4f83f6e858dd2e"},
+                ],
+            }
+        ]
     }
+    response = client.post(
+        "/data/", json=data, headers={"Authorization": f"Bearer: {access_token}"}
+    )
+    assert response.status_code == 200
+    data = {
+        "customers": [
+            {
+                "name": customer_name,
+                "wallets": [
+                    {"address": "0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc"},
+                ],
+            }
+        ]
+    }
+    response = client.post(
+        "/data/", json=data, headers={"Authorization": f"Bearer: {access_token}"}
+    )
+    assert response.status_code == 200
+
+    response = client.get(
+        "/data/", headers={"Authorization": f"Bearer: {access_token}"}
+    )
+    assert response.status_code == 200
+    result = response.get_json()
+    assert result["email"] == user_email
+    for customer in result["customers"]:
+        if customer["name"] != customer_name:
+            continue
+        assert len(customer["wallets"]) == 2

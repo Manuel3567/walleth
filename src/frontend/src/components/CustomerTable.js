@@ -30,6 +30,8 @@ function CustomerTable({ data, setData }) {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [oldCustomers, setOldCustomers] = useState([...data.customers]);
     const [newCustomer, setNewCustomer] = useState(null);
+    const [newWalletCustomers, setNewWalletCustomers] = useState([]);
+    const [newWallet, setNewWallet] = useState(null);
     const [newCustomers, setNewCustomers] = useState([]);
     const [removeCustomers, setRemoveCustomers] = useState([]);
 
@@ -45,6 +47,8 @@ function CustomerTable({ data, setData }) {
         }
         setEditMode(!editMode);
         setNewCustomer(null);
+        setNewWallet(null);
+        setNewWalletCustomers([]);
         setSelectedCustomer(null);
         setNewCustomers([]);
         setRemoveCustomers([]);
@@ -55,6 +59,16 @@ function CustomerTable({ data, setData }) {
             selectedCustomer === customerName ? null : customerName
         );
     };
+
+    const handleAddWallet = (customer) => {
+        if (newWallet && newWallet.address.trim() !== '') {
+            const isExistingWallet = customer.wallets.some((wallet) => wallet.address === newWallet.address);
+            if (!isExistingWallet) {
+                customer.wallets.push(newWallet);
+                setNewWalletCustomers([...newWalletCustomers, customer]);
+            }
+        }
+    }
 
     const handleAddCustomer = () => {
         // If newCustomer is not null, add it to customers
@@ -162,7 +176,7 @@ function CustomerTable({ data, setData }) {
             console.error('Error deleting customers:', error.message);
         }
 
-
+        setData({ customers: [...customers.filter((c) => !removeCustomers.includes(c.name)), ...newCustomers] });
         setSelectedCustomer(null);
         setOldCustomers([...customers]);
         setNewCustomer(null);

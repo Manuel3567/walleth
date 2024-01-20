@@ -128,10 +128,10 @@ def get_customer_document_of(user_document, customer_name):
     return customer_ref
 
 
-def delete_wallet(user_document, customer_name, wallet_account):
+def delete_wallet(user_document, customer_name, wallet_address):
     # Delete specific wallet and transactions from Firestore
     customer_ref = get_customer_document_of(user_document, customer_name)
-    wallet_ref = customer_ref.collection("wallets").document(wallet_account)
+    wallet_ref = customer_ref.collection("wallets").document(wallet_address)
 
     # Delete the wallet and its transactions
     wallet_ref.delete()
@@ -190,7 +190,6 @@ def handle_requests():
 
     elif request.method in ["POST", "PATCH"]:
         # Handle POST and PATCH requests
-        # Check if the account has an empty balance or no transactions
         input_data = request.get_json()
         app.logger.info(f"{request.remote_addr} ({request.method}): {input_data}")
         customers = input_data.get("customers", [])
@@ -212,17 +211,17 @@ def handle_requests():
             missing_wallet_addresses = []
             wallets = customer.get("wallets", [])
             for wallet in wallets:
-                account = wallet["account"]
-                wallet_ref = wallets_ref.document(account)
+                address = wallet["address"]
+                wallet_ref = wallets_ref.document(address)
                 if not wallet.get("balance") or not wallet.get("transactions"):
-                    missing_wallet_addresses.append(account)
+                    missing_wallet_addresses.append(address)
                     wallet_ref.set(
-                        {"address": account, "balance": None, "transactions": None}
+                        {"address": address, "balance": None, "transactions": None}
                     )
                 else:
                     wallet_ref.set(
                         {
-                            "address": account,
+                            "address": address,
                             "balance": wallet.get("balance"),
                             "transactions": wallet.get("transactions"),
                         }
@@ -254,8 +253,8 @@ def handle_requests():
 
             if "wallets" in customer:
                 for wallet in customer["wallets"]:
-                    wallet_account = wallet.get("account")
-                    delete_wallet(user_document_ref, customer_name, wallet_account)
+                    wallet_address = wallet.get("address")
+                    delete_wallet(user_document_ref, customer_name, wallet_address)
             else:
                 delete_customer(user_document_ref, customer_name)
 
