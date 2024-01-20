@@ -31,12 +31,23 @@ function CustomerTable({ data, setData }) {
     const [oldCustomers, setOldCustomers] = useState([...data.customers]);
     const [newCustomer, setNewCustomer] = useState(null);
     const [newCustomers, setNewCustomers] = useState([]);
+    const [removeCustomers, setRemoveCustomers] = useState([]);
 
     const { getAccessTokenSilently } = useAuth0();
 
     const handleEditClick = () => {
+        if (editMode) {
+            // revert changes
+            setCustomers(oldCustomers);
+        } else {
+            // start editing and save current customers
+            setOldCustomers([...customers]);
+        }
         setEditMode(!editMode);
+        setNewCustomer(null);
         setSelectedCustomer(null);
+        setNewCustomers([]);
+        setRemoveCustomers([]);
     };
 
     const handleRowClick = (customerName) => {
@@ -100,63 +111,65 @@ function CustomerTable({ data, setData }) {
         });
     };
 
-    const handleDeleteCustomer = (customerId) => {
+    const handleDeleteCustomer = (customerName) => {
         setCustomers((prevCustomers) =>
-            prevCustomers.filter((customer) => customer.id !== customerId)
+            prevCustomers.filter((customer) => customer.name !== customerName)
         );
+        setRemoveCustomers([...removeCustomers, { name: customerName }])
     };
 
-    const handleCheckmarkClick = () => {
-        // Assuming your API endpoint is at '/api/customers'
-        const apiUrl = '/api/customers';
+    const handleCommit = async () => {
+        const accessToken = await getAccessTokenSilently();
 
-        customers.forEach(async (customer) => {
-            if (customer.id < 0) {
-                // New customer, send POST request
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(customer),
-                });
+        //create customers
+        let payload = {
+            customers: newCustomers,
+        };
 
-                if (!response.ok) {
-                    console.error('Failed to add customer:', response.statusText);
-                }
-            } else {
-                // Existing customer, send DELETE request for wallets and customer
-                customer.wallets.forEach(async (wallet, index) => {
-                    const walletResponse = await fetch(
-                        `${apiUrl}/${customer.id}/wallets/${index}`,
-                        {
-                            method: 'DELETE',
-                        }
-                    );
-
-                    if (!walletResponse.ok) {
-                        console.error(
-                            'Failed to delete wallet:',
-                            walletResponse.statusText
-                        );
-                    }
-                });
-
-                const customerResponse = await fetch(
-                    `${apiUrl}/${customer.id}`,
-                    {
-                        method: 'DELETE',
-                    }
-                );
-
-                if (!customerResponse.ok) {
-                    console.error(
-                        'Failed to delete customer:',
-                        customerResponse.statusText
-                    );
-                }
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                console.log(`failed to create customers: ${payload}`);
             }
-        });
+        } catch (error) {
+            console.error('Error creating customers:', error.message);
+        }
+
+        // delete customers
+        payload = {
+            customers: removeCustomers,
+        };
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                console.log(`failed to delete ${payload}`);
+            }
+        } catch (error) {
+            console.error('Error deleting customers:', error.message);
+        }
+
+
+        setSelectedCustomer(null);
+        setOldCustomers([...customers]);
+        setNewCustomer(null);
+        setNewCustomers([]);
+        setRemoveCustomers([]);
+        setEditMode(!editMode);
+
     };
 
 
@@ -233,7 +246,7 @@ function CustomerTable({ data, setData }) {
                                                 handleDeleteCustomer(customer.name);
                                             }}
                                         >
-                                            <DeleteIcon />
+                                            {editMode && <DeleteIcon />}
                                         </IconButton>
                                     </TableCell>
                                 </TableRow>
@@ -315,8 +328,8 @@ function CustomerTable({ data, setData }) {
                     <Button onClick={handleAddCustomer} startIcon={<AddIcon />}>
                         Add Customer
                     </Button>
-                    <Button onClick={handleCheckmarkClick} startIcon={<CheckIcon />}>
-                        {editMode ? 'Save Changes' : 'Edit Mode'}
+                    <Button onClick={handleCommit} startIcon={<CheckIcon />}>
+                        Save Changes
                     </Button>
                 </Box>
             )}

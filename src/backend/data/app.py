@@ -199,7 +199,14 @@ def handle_requests():
 
         for customer in customers:
             customer_ref = customers_ref.document(customer["name"])
-            customer_ref.set({"name": customer["name"]})
+            customer_ref.set(
+                {
+                    "name": customer["name"],
+                    "email": customer.get("email", ""),
+                    "phone": customer.get("phone", ""),
+                    "address": customer.get("address", ""),
+                }
+            )
             wallets_ref = customer_ref.collection("wallets")
 
             missing_wallet_addresses = []
@@ -209,7 +216,9 @@ def handle_requests():
                 wallet_ref = wallets_ref.document(account)
                 if not wallet.get("balance") or not wallet.get("transactions"):
                     missing_wallet_addresses.append(account)
-                    wallet_ref.set({"address": account, "balance": None, "transactions": None})
+                    wallet_ref.set(
+                        {"address": account, "balance": None, "transactions": None}
+                    )
                 else:
                     wallet_ref.set(
                         {
@@ -233,20 +242,6 @@ def handle_requests():
                         "transactions": missing_data[wallet_address]["transactions"],
                     }
                 )
-
-        # Store information in Firestore
-        # c = {customer["name"]: customer for customer in customers}
-        # input_data["customers"] = c
-        # for customer in customers:
-        # try:
-        #     user_document.collection("customers").set(c)
-        #     #user_document.create(input_data)
-        # except Conflict as e:
-        #     user_document.update(input_data)
-
-        # except Exception as e:
-        #     app.logger.error(e)
-        #     return {}, 500
 
         return {}, 200
 

@@ -24,6 +24,10 @@ function AuthenticatedApp() {
 
     useEffect(() => {
         let isMounted = true;
+        async function handlePostToData(event) {
+            if ((event.request.method === "GET") && (!event.request.url.includes('/data/'))) return;
+            getData();
+        }
 
         const getData = async () => {
             if (!isMounted) {
@@ -46,9 +50,13 @@ function AuthenticatedApp() {
         };
 
         getData();
+        window.addEventListener('fetch', (event => {
+
+        }));
 
         return () => {
             isMounted = false;
+            window.removeEventListener('fetch', handlePostToData);
         };
     }, [getAccessTokenSilently, setData]);
 

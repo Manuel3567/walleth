@@ -1,5 +1,5 @@
 # Use the official Python alpine image for 3.11 as a base image
-FROM python:3.11-bullseye
+FROM python:3.11-alpine
 
 # Set the working directory inside the container
 WORKDIR /app

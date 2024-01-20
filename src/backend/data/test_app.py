@@ -86,7 +86,13 @@ def test_create_and_get_customer(client, user_document):
     assert response.status_code == 200
     result = response.get_json()
     assert result["email"] == user_email
-    assert result["customers"][0] == {"name": customer_name, "wallets": []}
+    assert result["customers"][0] == {
+        "name": customer_name,
+        "address": "",
+        "phone": "",
+        "email": "",
+        "wallets": [],
+    }
 
 
 def test_create_and_get_multiple_customers_with_wallets(client, user_document):
