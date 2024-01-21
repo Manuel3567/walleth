@@ -1,12 +1,16 @@
 import os
 import requests
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dataclasses import dataclass
+
 
 APP_URL = os.environ.get("APP_URL", "https://app.portfolioeth.de")
 SERVICE_NAME = os.environ.get("SERVICE_NAME", "ethereum")
 ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY", "")
-from dataclasses import dataclass
+
+MAX_NUM_TRANSACTIONS = 550  # 10000 max
 
 
 @dataclass
@@ -49,7 +53,12 @@ class TransactionResult:
     def get(cls, **kwargs):
         from_address = kwargs.pop("from")
         to_address = kwargs.pop("to")
-        return cls(from_address=from_address, to_address=to_address, **kwargs)
+        input = kwargs.pop("input")
+        if len(input) > 10:
+            input = input[:10] + "..."  # limit to 10 chars to prevent db overload
+        return cls(
+            from_address=from_address, to_address=to_address, input=input, **kwargs
+        )
 
 
 @dataclass
@@ -64,7 +73,6 @@ app.config["ETHERSCAN_API_KEY"] = ETHERSCAN_API_KEY
 
 CORS(app=app, origins=[APP_URL], supports_credentials=True)
 
-import logging
 
 app.logger.setLevel(logging.INFO)
 
@@ -123,7 +131,7 @@ def get_transactions():
 
         result = []
         for address in addresses:
-            url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=desc&apikey={api_key}"
+            url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset={MAX_NUM_TRANSACTIONS}&sort=desc&apikey={api_key}"
             response = requests.get(url)
             transactions_data = response.json()
             app.logger.info(f"received etherscan data: {transactions_data}")
