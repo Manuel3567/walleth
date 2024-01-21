@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from 'react'
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Topbar from './scenes/global/Topbar';
 import HomePage from './scenes/global/HomePage';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -18,6 +18,7 @@ import Customers from './scenes/customers/Customers';
 //import Topbar from './scenes/global/Topbar'
 
 function AuthenticatedApp() {
+    const location = useLocation()
     const [data, setData] = useState({ 'customers': [] });
 
     const { getAccessTokenSilently } = useAuth0();
@@ -39,7 +40,6 @@ function AuthenticatedApp() {
     };
 
     const handleUpdateToData = async (event) => {
-        if ((!event.request.url.includes('/data/'))) return;
         await getData();
     };
 
@@ -47,13 +47,15 @@ function AuthenticatedApp() {
         let isMounted = true;
 
         getData();
-        window.addEventListener('navigate', handleUpdateToData);
+        //window.addEventListener('hashchange', handleUpdateToData);
+        //browser.webNavigation.onReferenceFragmentUpdated.addListener(handleUpdateToData);
 
         return () => {
             isMounted = false;
-            window.removeEventListener('navigate', handleUpdateToData);
+            //window.removeEventListener('hashchange', handleUpdateToData);
+            //browser.webNavigation.onReferenceFragmentUpdated.removeListener(handleUpdateToData);
         };
-    }, [getAccessTokenSilently, setData]);
+    }, [getAccessTokenSilently, location, setData]);
 
 
     return (

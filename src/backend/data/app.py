@@ -101,6 +101,15 @@ def get_user_document_from_email(email) -> DocumentReference:
     return user_document_ref
 
 
+def get_customer_names_from_user_email(email) -> list[str]:
+    doc_ref = get_user_document_from_email(email)
+    customer_names = []
+    for customer_ref in doc_ref.collection("customers").list_documents():
+        customer_name = customer_ref.path.split("/")[-1]
+        customer_names.append(customer_name)
+    return customer_names
+
+
 def send_request_to_ethereum_service(addresses):
     data = {"addresses": addresses}
     # Send a POST request to the Ethereum service
@@ -140,7 +149,9 @@ def delete_wallet(user_document, customer_name, wallet_address):
 def delete_customer(user_document, customer_name):
     # Delete a customer and associated data from Firestore
     customer_ref = get_customer_document_of(user_document, customer_name)
-
+    wallets_coll_ref = customer_ref.collection("wallets")
+    for wallet_ref in wallets_coll_ref.list_documents():
+        wallet_ref.delete()
     # Delete the customer and its wallets
     customer_ref.delete()
 
@@ -178,10 +189,23 @@ def handle_requests():
         app.logger.info("Accessing user's customer data...")
         for customer_ref in customers_ref.list_documents():
             customer: dict = customer_ref.get().to_dict()
+            if not isinstance(customer, dict):
+                app.logger.warning(
+                    f"customer: {customer_ref.path} could not be converted to a dict. Deleting customer"
+                )
+                delete_customer(user_document_ref, customer_ref.path.split("/")[-1])
+                customer_ref.delete()
+                continue
             wallets_ref = customer_ref.collection("wallets")
             wallets = []
             for wallet_ref in wallets_ref.list_documents():
                 wallet = wallet_ref.get().to_dict()
+                if not isinstance(wallet, dict):
+                    app.logger.warning(
+                        f"wallet: {wallet_ref.path} could not be converted to a dict. Deleting wallet..."
+                    )
+                    wallet_ref.delete()
+                    continue
                 wallets.append(wallet)
             customer["wallets"] = wallets
             customers.append(customer)
@@ -211,6 +235,10 @@ def handle_requests():
             missing_wallet_addresses = []
             wallets = customer.get("wallets", [])
             for wallet in wallets:
+                if not isinstance(wallet, dict):
+                    continue
+                if "address" not in wallet:
+                    continue
                 address = wallet["address"]
                 wallet_ref = wallets_ref.document(address)
                 if not wallet.get("balance") or not wallet.get("transactions"):
@@ -247,6 +275,7 @@ def handle_requests():
     elif request.method == "DELETE":
         # Handle DELETE request
         input_data = request.get_json()
+        app.logger.info(f"{request.remote_addr} ({request.method}): {input_data}")
 
         for customer in input_data.get("customers", []):
             customer_name = customer.get("name")
@@ -254,8 +283,12 @@ def handle_requests():
             if "wallets" in customer:
                 for wallet in customer["wallets"]:
                     wallet_address = wallet.get("address")
+                    app.logger.info(
+                        f"Deleting customer {customer_name}'s wallet: {wallet_address}"
+                    )
                     delete_wallet(user_document_ref, customer_name, wallet_address)
             else:
+                app.logger.info(f"Deleting customer {customer_name}")
                 delete_customer(user_document_ref, customer_name)
 
         return {}, 200

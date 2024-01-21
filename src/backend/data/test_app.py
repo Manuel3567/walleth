@@ -3,8 +3,9 @@ from flask import json
 from app import (
     app,
     get_user_document_from_email,
-    delete_customer,
+    get_customer_names_from_user_email,
     get_and_verify_data_from_token,
+    delete_customer,
 )
 from dotenv import load_dotenv
 import os
@@ -17,11 +18,12 @@ def client():
     app.config["TESTING"] = True
     client = app.test_client()
 
-    # Setup: Add any necessary setup steps here
-
     yield client
-
-    # Teardown: Add any necessary teardown steps here
+    user_email = os.environ["EMAIL"]
+    cns = get_customer_names_from_user_email(user_email)
+    user_ref = get_user_document_from_email(user_email)
+    for cn in cns:
+        delete_customer(user_ref, cn)
 
 
 @pytest.fixture(scope="function")

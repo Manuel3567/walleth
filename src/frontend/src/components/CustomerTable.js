@@ -30,10 +30,11 @@ function hash(s) {
 }
 
 function CustomerTable({ data, setData }) {
-    const [customers, setCustomers] = useState([...data.customers]);
+    window.history.replaceState({}, document.title);
+    const [customers, setCustomers] = useState(data.customers);
     const [editMode, setEditMode] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [oldCustomers, setOldCustomers] = useState([...data.customers]);
+    const [oldCustomers, setOldCustomers] = useState(JSON.parse(JSON.stringify(data.customers)));
     const [newCustomer, setNewCustomer] = useState(null);
     const [newWalletCustomers, setNewWalletCustomers] = useState([]);
     const [newWallet, setNewWallet] = useState(null);
@@ -48,13 +49,12 @@ function CustomerTable({ data, setData }) {
             setCustomers(oldCustomers);
         } else {
             // start editing and save current customers
-            setOldCustomers([...customers]);
+            setOldCustomers(JSON.parse(JSON.stringify(customers)));
         }
         setEditMode(!editMode);
         setNewCustomer(null);
         setNewWallet(null);
         setNewWalletCustomers([]);
-        setSelectedCustomer(null);
         setNewCustomers([]);
         setRemoveCustomers([]);
     };
@@ -105,6 +105,7 @@ function CustomerTable({ data, setData }) {
             }
         } else {
             // If newCustomer is null or has an empty name, create a new empty customer
+            setSelectedCustomer(null);
             setNewCustomer({
                 name: '',
                 email: '',
@@ -122,13 +123,17 @@ function CustomerTable({ data, setData }) {
         console.log(wallet);
         console.log(customerIndex);
         let customer = customers[customerIndex];
-        customer.wallets = [customer.wallets.filter(w => w.address !== wallet.address)]
-        setCustomers(customers.splice(customerIndex, 1, customer));
+        console.log("Found customer...");
+        console.log(customer);
+        customer.wallets.splice(walletIndex, 1);
+        console.log("Customer wallets...");
+        console.log(customer.wallets);
+
+        setCustomers([...customers]);
         // remove from newWalletCostumers
         setNewWalletCustomers(newWalletCustomers.filter(c => c.name !== customer.name && !c.wallets.includes({ address: wallet.address })));
-
-
-
+        //schedule for deletion
+        setRemoveCustomers([...removeCustomers, { name: customer.name, wallets: [{ address: wallet.address }] }]);
     };
 
     const handleDeleteCustomer = (customerName) => {
@@ -147,7 +152,7 @@ function CustomerTable({ data, setData }) {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+            const response = fetch(`${process.env.REACT_APP_API}/data/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,7 +173,7 @@ function CustomerTable({ data, setData }) {
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+            const response = fetch(`${process.env.REACT_APP_API}/data/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -183,11 +188,11 @@ function CustomerTable({ data, setData }) {
             console.error('Error creating customers:', error.message);
         }
         // delete customers
-        payload = {
-            customers: removeCustomers,
-        };
         try {
-            const response = await fetch(`${process.env.REACT_APP_API}/data/`, {
+            payload = {
+                customers: removeCustomers,
+            };
+            const response = fetch(`${process.env.REACT_APP_API}/data/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -202,16 +207,16 @@ function CustomerTable({ data, setData }) {
             console.error('Error deleting customers:', error.message);
         }
 
+
         setData({ customers: [...customers.filter((c) => !removeCustomers.includes(c.name)), ...newCustomers] });
         setSelectedCustomer(null);
-        setOldCustomers([...customers]);
+        setOldCustomers(JSON.parse(JSON.stringify(customers)));
         setNewCustomer(null);
         setNewCustomers([]);
         setRemoveCustomers([]);
         setEditMode(!editMode);
         setNewWalletCustomers([]);
         setNewWallet(null);
-
     };
 
 
@@ -356,8 +361,14 @@ function CustomerTable({ data, setData }) {
                                 </TableCell>
                                 <TableCell>
                                     {/* Button to add newCustomer or save changes */}
+                                    <IconButton onClick={(e) => setNewCustomer(null)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </TableCell>
+                                <TableCell>
+                                    {/* Button to add newCustomer or save changes */}
                                     <IconButton onClick={handleAddCustomer}>
-                                        <AddIcon />
+                                        <CheckIcon />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
