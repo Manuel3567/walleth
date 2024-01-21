@@ -2,11 +2,9 @@ import { React, useState, useEffect } from 'react'
 import { Outlet, useLocation } from "react-router-dom";
 import Topbar from './scenes/global/Topbar';
 import HomePage from './scenes/global/HomePage';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import { useAuth0 } from "@auth0/auth0-react";
-import Error from "./scenes/errors/Error";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Portfolio from './scenes/portfolio/Portfolio';
 import Company from './scenes/company/Company';
@@ -39,9 +37,9 @@ function AuthenticatedApp() {
         }
     };
 
-    const handleUpdateToData = async (event) => {
-        await getData();
-    };
+    //const handleUpdateToData = async (event) => {
+    //    await getData();
+    //};
 
     useEffect(() => {
         let isMounted = true;

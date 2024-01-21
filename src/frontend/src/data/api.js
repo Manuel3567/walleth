@@ -5,7 +5,7 @@ export function sumBalances(data) {
     data.customers.forEach(customer => {
         customer.wallets.forEach(wallet => {
             if (wallet.balance) {
-                totalBalance += parseFloat(wallet.balance / (10 ** 16));
+                totalBalance += parseFloat(wallet.balance / (10 ** 18));
             }
         });
     });
@@ -17,7 +17,7 @@ export function filterTransactions(data) {
     let res = [];
     let cs = data.customers;
     cs.forEach(c => { c.wallets.forEach(w => { w.transactions && res.push(...w.transactions) }) });
-    return res;
+    return res.reverse();
 }
 
 export function filterCustomerBalances(data) {

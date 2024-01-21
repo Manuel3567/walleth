@@ -123,7 +123,7 @@ def get_transactions():
 
         result = []
         for address in addresses:
-            url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey={api_key}"
+            url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=desc&apikey={api_key}"
             response = requests.get(url)
             transactions_data = response.json()
             app.logger.info(f"received etherscan data: {transactions_data}")

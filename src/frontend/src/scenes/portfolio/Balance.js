@@ -15,15 +15,10 @@ export default function Balance({ data }) {
 
     return (
         <React.Fragment>
-            <Title>Balance</Title>
+            <Title>Total Assets</Title>
             <Typography component="p" variant="h4">
                 ETH {totalBalance}
             </Typography>
-            <div>
-                <Link color="primary" href="#" onClick={preventDefault}>
-                    View balance
-                </Link>
-            </div>
         </React.Fragment>
     );
 }
