@@ -17,7 +17,7 @@ export function filterTransactions(data) {
     let res = [];
     let cs = data.customers;
     cs.forEach(c => { c.wallets.forEach(w => { w.transactions && res.push(...w.transactions) }) });
-    return res.reverse();
+    return res;
 }
 
 export function filterCustomerBalances(data) {
